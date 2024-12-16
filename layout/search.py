@@ -1,4 +1,6 @@
+import os
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QFileDialog
+from PyQt6.QtCore import QDir
 from widgets import CoverImage, MangaSearch, Button
 from functions import Manga
 
@@ -53,7 +55,7 @@ class SearchLayout(QWidget):
     self.enabled_button(False)
 
     if self.mange.check():
-      self.window.setWindowTitle(f'{title} | 接続成功')
+      self.window.setWindowTitle(f'{title} | 接続成功') 
 
       cover_url = self.mange.get_cover()
       self.cover_image.set_cover(cover_url)
@@ -64,8 +66,9 @@ class SearchLayout(QWidget):
     self.enabled_button(True)
 
   def download(self):
-    download_path = QFileDialog.getExistingDirectory(
-        self, 'フォルダ選択', )
+    download_folder = os.path.join(QDir.homePath(), 'Downloads')
+    download_path = QFileDialog.getExistingDirectory(self, 'フォルダ選択',
+                                                     download_folder)
     title = self.main_config['General']['title']
 
     self.enabled_button(False)

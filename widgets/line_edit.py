@@ -17,7 +17,7 @@ class MangaSearch(QLineEdit):
       color: #FFFFFF;
       padding: 10px 20px;
       font-size: 14px;
-      border-radius: 4px;
+      border-radius: 6px;
     ''')
 
     return self

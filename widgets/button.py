@@ -21,17 +21,30 @@ class Button(QPushButton):
     self.setCursor(Qt.CursorShape.PointingHandCursor)
     self.setStyleSheet('''
       QPushButton {
-        background-color: #333333;
+        background-color: #3A3A3A;
         color: #FFFFFF;
         border: 2px solid #555555;
         padding: 10px 20px;
         font-size: 14px;
-        border-radius: 4px;
+        border-radius: 6px;
       }
+
       QPushButton:hover {
-        background-color: #444444;
-        color: #DDDDDD;
-        border-color: #777777;
+        background-color: #505050;
+        color: #F0F0F0;
+        border-color: #888888;
+      }
+
+      QPushButton:pressed {
+        background-color: #2A2A2A;
+        border-color: #666666;
+        color: #E0E0E0;
+      }
+
+      QPushButton:disabled {
+        background-color: #4A4A4A;
+        color: #B0B0B0;
+        border-color: #666666;
       }
     ''')
 

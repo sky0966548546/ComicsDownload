@@ -1,6 +1,7 @@
 import os
 import re
 import time
+from concurrent.futures import ThreadPoolExecutor
 from urllib import request, error
 from bs4 import BeautifulSoup as bs
 
@@ -53,6 +54,8 @@ class Manga:
     return ''.join(span.get_text() for span in title_element)
 
   def download(self, download_path, window, title):
+    window.setWindowTitle(f'{title} | ダウンロード中...')
+
     thumbnailContainer = self.soup.find(id='thumbnail-container')
 
     download_folder = re.sub(r'[<>|\|*|"|\/|\|:|?]', ' ', self.get_title())
@@ -68,27 +71,29 @@ class Manga:
       image_element = thumbnailContainer.find_all('img', class_='lazyload')
 
       for image in image_element:
-        src = image['data-src']
-        ext = src.split('.')[-1]
+        image_url = image['data-src']
+        ext = image_url.split('.')[-1]
 
-        src = src.replace(f't.{ext}', f'.{ext}')
-        src = src.replace('https://t', 'https://i')
+        image_url = image_url.replace(f't.{ext}', f'.{ext}')
+        image_url = image_url.replace('https://t', 'https://i')
 
-        image_list.append(src)
+        image_list.append(image_url)
 
         image_list_length = len(image_list)
 
-      for index, src in enumerate(image_list):
-        ext = src.split('.')[-1]
-        image_index = str(index + 1).zfill(len(str(image_list_length)))
+      with ThreadPoolExecutor(
+          max_workers=int(self.main_config['Dowload']['max_workers'])) as executor:
 
-        image_name = f'{image_index}.{ext}'
-        image_name = re.sub(r'[<>|\|*|"|\/|\|:|?]', '_', image_name)
+        def download_image(image_url):
+          ext = image_url.split('.')[-1]
 
-        image_list[index] = {'name': image_name, 'src': src}
-        image_path = os.path.join(download_path, image_name)
+          image_url = image_url
+          image_name = os.path.basename(image_url).split('.')[0]
+          image_name = f'{image_name.zfill(len(str(image_list_length)))}.{ext}'
+          image_path = os.path.join(download_path, image_name)
 
-        window.setWindowTitle(f'{title} | ダウンロード中...')
+          request.urlretrieve(image_url, image_path)
 
-        request.urlretrieve(src, image_path)
-        time.sleep(0.2)
+          time.sleep(int(self.main_config['Dowload']['delay']))
+
+        executor.map(download_image, image_list)

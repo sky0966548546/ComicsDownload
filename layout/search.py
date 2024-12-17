@@ -12,7 +12,9 @@ class SearchLayout(QWidget):
 
     self.main_config = main_config
     self.window = window
-    self.mange = Manga(self.main_config)
+    self.title = self.main_config['General']['title']
+
+    self.mange = Manga(self.main_config, window, self.enabled_button)
 
     self.cover_image = CoverImage(self.main_config)
     cover_image_widget = self.cover_image.init_ui()
@@ -49,19 +51,15 @@ class SearchLayout(QWidget):
 
   def search(self):
     self.mange.init(self.manga_search.text())
-    title = self.main_config['General']['title']
-
-    self.window.setWindowTitle(f'{title} | 接続準備中...')
-    self.enabled_button(False)
 
     if self.mange.check():
-      self.window.setWindowTitle(f'{title} | 接続成功') 
-
       cover_url = self.mange.get_cover()
+
       self.cover_image.set_cover(cover_url)
+      self.window.setWindowTitle(f'{self.title} | 接続成功')
     else:
-      self.window.setWindowTitle(f'{title} | 接続エラー、再入力してください')
       self.cover_image.reset_cover()
+      self.window.setWindowTitle(f'{self.title} | 接続エラー、再入力してください')
 
     self.enabled_button(True)
 
@@ -69,12 +67,6 @@ class SearchLayout(QWidget):
     download_folder = os.path.join(QDir.homePath(), 'Downloads')
     download_path = QFileDialog.getExistingDirectory(self, 'フォルダ選択',
                                                      download_folder)
-    title = self.main_config['General']['title']
-
-    self.enabled_button(False)
 
     if download_path:
-      self.mange.download(download_path, self.window, title)
-
-    self.window.setWindowTitle(f'{title} | ダウンロード完了')
-    self.enabled_button(True)
+      self.mange.download(download_path)

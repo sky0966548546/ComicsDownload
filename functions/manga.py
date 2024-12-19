@@ -18,10 +18,10 @@ class DownloadThread(QThread):
     self.download_path = download_path
     self.title = self.main_config['General']['title']
 
-    if os.path.exists(download_path):
+    if os.path.exists(self.download_path):
       return
     else:
-      os.makedirs(download_path)
+      os.makedirs(self.download_path)
 
   def run(self):
     image_list_length = len(self.image_list)
@@ -42,7 +42,6 @@ class DownloadThread(QThread):
       for index, _ in enumerate(executor.map(download_image, self.image_list)):
         self.progress.emit(index + 1)
 
-
 class Manga:
 
   def __init__(self, main_config, window, enabled_button):
@@ -50,6 +49,8 @@ class Manga:
     self.window = window
     self.enabled_button = enabled_button
     self.title = self.main_config['General']['title']
+    self.download_folder = None
+    self.download_path = None
     self.mange_id = None
     self.origin = None
     self.soup = None
@@ -96,13 +97,13 @@ class Manga:
 
       return False
 
-  def download(self, download_path):
+  def download(self, download_path, save_pdf_state):
     self.enabled_button(False)
 
     thumbnailContainer = self.soup.find(id='thumbnail-container')
 
-    download_folder = re.sub(r'[<>|\|*|"|\/|\|:|?]', ' ', self.get_title())
-    download_path = os.path.join(download_path, download_folder)
+    self.download_folder = re.sub(r'[<>|\|*|"|\/|\|:|?]', ' ', self.get_title())
+    self.download_path = os.path.join(download_path, self.download_folder)
 
     if thumbnailContainer:
       image_list = []
@@ -117,10 +118,15 @@ class Manga:
 
         image_list.append(image_url)
 
-      self.download_thread = DownloadThread(self.main_config, image_list, download_path)
+      self.download_thread = DownloadThread(self.main_config, image_list, self.download_path)
       self.download_thread.started.connect(lambda: on_download_started())
       self.download_thread.finished.connect(lambda: on_download_finished())
       self.download_thread.start()
+
+    def save_as_pdf():
+      name = re.sub(r'[<>|\|*|"|\/|\|:|?]', ' ', self.get_title())
+      pdf_path = os.path.join(self.download_path, f'{name}.pdf')
+      print(pdf_path)
 
     def on_download_started():
       self.window.setWindowTitle(f'{self.title} | ダウンロード中...')
@@ -128,4 +134,8 @@ class Manga:
 
     def on_download_finished():
       self.window.setWindowTitle(f'{self.title} | ダウンロード完了')
+
+      if (save_pdf_state):
+        save_as_pdf()
+
       self.enabled_button(True)

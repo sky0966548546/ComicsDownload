@@ -1,7 +1,7 @@
 import os
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QFileDialog
 from PyQt6.QtCore import QDir
-from widgets import CoverImage, MangaSearch, Button
+from widgets import CoverImage, MangaSearch, Button, CheckButton
 from functions import Manga
 
 
@@ -13,6 +13,7 @@ class SearchLayout(QWidget):
     self.main_config = main_config
     self.window = window
     self.title = self.main_config['General']['title']
+    self.save_as_pdf_state = False
 
     self.mange = Manga(self.main_config, window, self.enabled_button)
 
@@ -25,15 +26,20 @@ class SearchLayout(QWidget):
     self.search_button = self.search_button.init_ui()
     self.download_button = Button(self.main_config, 'download')
     self.download_button = self.download_button.init_ui()
+    self.save_as_pdf_button = CheckButton(self.main_config, 'pdf')
+    self.save_as_pdf_button = self.save_as_pdf_button.init_ui()
+
     self.download_button.setEnabled(False)
+    self.save_as_pdf_button.setCheckable(True)
 
     search_button_layout = QHBoxLayout()
     search_button_layout.addWidget(self.search_button)
     search_button_layout.addWidget(self.download_button)
+    search_button_layout.addWidget(self.save_as_pdf_button)
 
     layout = QVBoxLayout(self)
     layout.addLayout(cover_image_widget)
-    layout.addSpacing(20)
+    layout.addSpacing(10)
     layout.addWidget(self.manga_search)
     layout.setSpacing(10)
     layout.addLayout(search_button_layout)
@@ -44,10 +50,14 @@ class SearchLayout(QWidget):
 
     self.search_button.clicked.connect(lambda: self.search())
     self.download_button.clicked.connect(lambda: self.download())
+    self.save_as_pdf_button.toggled.connect(lambda: self.save_as_pdf_toggled())
 
   def enabled_button(self, enabled):
     self.search_button.setEnabled(enabled)
     self.download_button.setEnabled(enabled)
+
+  def save_as_pdf_toggled(self):
+    self.save_as_pdf_state = self.save_as_pdf_button.isChecked()
 
   def search(self):
     self.mange.init(self.manga_search.text())
@@ -69,4 +79,4 @@ class SearchLayout(QWidget):
                                                      download_folder)
 
     if download_path:
-      self.mange.download(download_path)
+      self.mange.download(download_path, self.save_as_pdf_state)

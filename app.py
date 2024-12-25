@@ -1,23 +1,28 @@
-import sys
 import os
 import atexit
-import configparser
+import importlib.resources as resources
 from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QFrame, QWidget
 from PyQt6.QtGui import QIcon
 from widgets import LockFile
 from layout import SearchLayout
+from assets import images
+
 
 class MainWindow(QMainWindow):
 
-  def __init__(self, config):
+  def __init__(self):
     super().__init__()
 
-    self.setWindowTitle(config['General']['title'])
-    self.setWindowIcon(QIcon(config['General']['icon']))
-    self.setFixedSize(int(config['General']['width']),
-                      int(config['General']['height']))
+    title = '漫画ダウンローダー'
+    width = 400
+    height = 500
 
-    search_layout = SearchLayout(config, self)
+    with resources.as_file(resources.files(images) / 'icon.ico') as icon_path:
+      self.setWindowTitle(title)
+      self.setWindowIcon(QIcon(str(icon_path)))
+      self.setFixedSize(width, height)
+
+    search_layout = SearchLayout(self)
 
     line = QFrame()
     line.setFrameShape(QFrame.Shape.VLine)
@@ -31,26 +36,23 @@ class MainWindow(QMainWindow):
 
     main_layout.addWidget(search_layout)
 
+  def closeEvent(self, event):
+    lock_file_path = os.path.join(os.getcwd(), 'app.lock')
+    LockFile.remove(lock_file_path)
+    event.accept()
+
 
 if __name__ == '__main__':
-  app = QApplication(sys.argv)
+  app = QApplication([])
   app.setStyle('Fusion')
 
-  main_config_path = os.path.join(os.getcwd(), 'assets', 'config',
-                                  'main_config.ini')
   lock_file_path = os.path.join(os.getcwd(), 'app.lock')
 
-  config = configparser.ConfigParser()
-  config.read(main_config_path)
-
-  config['General']['icon'] = os.path.join(config['Paths']['images'],
-                                           config['General']['icon'])
-
-  lock_file = LockFile(app, config, lock_file_path)
+  lock_file = LockFile(app, lock_file_path)
   lock_file.create()
-  atexit.register(lock_file.remove, lock_file_path)
+  atexit.register(lambda: LockFile.remove(lock_file_path))
 
-  window = MainWindow(config)
+  window = MainWindow()
 
   window.show()
-  sys.exit(app.exec())
+  app.exec()

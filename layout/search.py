@@ -7,26 +7,25 @@ from functions import Manga
 
 class SearchLayout(QWidget):
 
-  def __init__(self, main_config, window):
+  def __init__(self, window):
     super().__init__()
 
-    self.main_config = main_config
     self.window = window
-    self.title = self.main_config['General']['title']
+    self.title = '漫画ダウンローダー'
     self.save_as_pdf_state = False
 
-    self.mange = Manga(self.main_config, window, self.enabled_button)
+    self.mange = Manga(window, self.enabled_button)
 
-    self.cover_image = CoverImage(self.main_config)
+    self.cover_image = CoverImage()
     cover_image_widget = self.cover_image.init_ui()
 
     self.manga_search = MangaSearch()
     self.manga_search = self.manga_search.init_ui()
-    self.search_button = Button(self.main_config, 'search')
+    self.search_button = Button('検索')
     self.search_button = self.search_button.init_ui()
-    self.download_button = Button(self.main_config, 'download')
+    self.download_button = Button('ダウンロード')
     self.download_button = self.download_button.init_ui()
-    self.save_as_pdf_button = CheckButton(self.main_config, 'pdf')
+    self.save_as_pdf_button = CheckButton('PDF として保存')
     self.save_as_pdf_button = self.save_as_pdf_button.init_ui()
 
     self.download_button.setEnabled(False)

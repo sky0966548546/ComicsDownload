@@ -1,16 +1,13 @@
-import os
 import configparser
 
 
 class Config:
 
-  def __init__(self, path):
-    self.path = path
+  def __init__(self, config_name):
+    self.config_name = config_name
 
-  def load_config(self, name):
-    config_path = os.path.join(self.path, f'{name}.ini')
+  def load(self):
+    config_parser = configparser.ConfigParser()
+    config_parser.read(self.config_name)
 
-    config = configparser.ConfigParser()
-    config.read(config_path)
-
-    return config
+    return config_parser

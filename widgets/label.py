@@ -1,38 +1,38 @@
-import os
+import importlib.resources as resources
 from urllib.request import urlopen
 from PyQt6.QtWidgets import QHBoxLayout, QLabel
 from PyQt6.QtGui import QPixmap, QFont
+from assets import images
 
 
 class CoverImage(QLabel):
 
-  def __init__(self, main_config):
+  def __init__(self):
     super().__init__()
 
-    self.main_config = main_config
     self.cover_label = self
     self.cover_data = None
 
   def init_ui(self):
-    images_path = self.main_config['Paths']['images']
-    cover_path = os.path.join(images_path, 'cover.png')
+    with resources.as_file(resources.files(images) /
+                           'cover.png') as cover_path:
 
-    with open(cover_path, 'rb') as cover:
-      self.cover_data = cover.read()
+      with open(cover_path, 'rb') as cover:
+        self.cover_data = cover.read()
 
-    cover = QPixmap()
-    cover.loadFromData(self.cover_data)
+      cover = QPixmap()
+      cover.loadFromData(self.cover_data)
 
-    self.cover_label.setPixmap(cover)
-    self.cover_label.setScaledContents(True)
-    self.cover_label.setFixedSize(240, 345)
+      self.cover_label.setPixmap(cover)
+      self.cover_label.setScaledContents(True)
+      self.cover_label.setFixedSize(240, 345)
 
-    cover_image = QHBoxLayout()
-    cover_image.addStretch(1)
-    cover_image.addWidget(self.cover_label)
-    cover_image.addStretch(1)
+      cover_image = QHBoxLayout()
+      cover_image.addStretch(1)
+      cover_image.addWidget(self.cover_label)
+      cover_image.addStretch(1)
 
-    return cover_image
+      return cover_image
 
   def set_cover(self, cover_url):
     cover_data = urlopen(cover_url).read()
@@ -47,6 +47,7 @@ class CoverImage(QLabel):
     cover.loadFromData(self.cover_data)
 
     self.cover_label.setPixmap(cover)
+
 
 class InfoLabel(QLabel):
 

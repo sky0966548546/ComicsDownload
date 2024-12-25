@@ -1,22 +1,16 @@
 from PyQt6.QtWidgets import QPushButton
 from PyQt6.QtCore import Qt
-from functions import Config
 
 
 class Button(QPushButton):
 
-  def __init__(self, main_config, name):
+  def __init__(self, name):
     super().__init__()
 
-    self.main_config = main_config
-
-    config = Config(self.main_config['Paths']['config'])
-
-    self.widget_config = config.load_config('widget_config')
     self.name = name
 
   def init_ui(self):
-    self.setText(self.widget_config['Button'][self.name])
+    self.setText(self.name)
     self.setFixedHeight(40)
     self.setCursor(Qt.CursorShape.PointingHandCursor)
     self.setStyleSheet('''
@@ -53,18 +47,13 @@ class Button(QPushButton):
 
 class CheckButton(QPushButton):
 
-  def __init__(self, main_config, name):
+  def __init__(self, name):
     super().__init__()
 
-    self.main_config = main_config
-
-    config = Config(self.main_config['Paths']['config'])
-
-    self.widget_config = config.load_config('widget_config')
     self.name = name
 
   def init_ui(self):
-    self.setText(self.widget_config['Button'][self.name])
+    self.setText(self.name)
     self.setFixedHeight(40)
     self.setCursor(Qt.CursorShape.PointingHandCursor)
     self.setCheckable(True)

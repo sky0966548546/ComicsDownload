@@ -5,18 +5,20 @@ from concurrent.futures import ThreadPoolExecutor
 from urllib import request, error
 from bs4 import BeautifulSoup as bs
 from PyQt6.QtCore import QThread, pyqtSignal
+from .config import Config
 
 
 class DownloadThread(QThread):
   progress = pyqtSignal(int)
 
-  def __init__(self, main_config, image_list, download_path):
+  def __init__(self, image_list, download_path):
     super().__init__()
 
-    self.main_config = main_config
+    config = Config('setting.ini')
+
     self.image_list = image_list
     self.download_path = download_path
-    self.title = self.main_config['General']['title']
+    self.dowload_config = config.load()
 
     if os.path.exists(self.download_path):
       return
@@ -25,9 +27,10 @@ class DownloadThread(QThread):
 
   def run(self):
     image_list_length = len(self.image_list)
-    max_workers = int(self.main_config['Dowload']['max_workers'])
+    max_workers = int(self.dowload_config['Dowload']['max_workers'])
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
+
       def download_image(image_url):
         ext = image_url.split('.')[-1]
 
@@ -37,18 +40,18 @@ class DownloadThread(QThread):
 
         request.urlretrieve(image_url, image_path)
 
-        time.sleep(int(self.main_config['Dowload']['delay']))
+        time.sleep(int(self.dowload_config['Dowload']['delay']))
 
       for index, _ in enumerate(executor.map(download_image, self.image_list)):
         self.progress.emit(index + 1)
 
+
 class Manga:
 
-  def __init__(self, main_config, window, enabled_button):
-    self.main_config = main_config
+  def __init__(self, window, enabled_button):
     self.window = window
     self.enabled_button = enabled_button
-    self.title = self.main_config['General']['title']
+    self.title = '漫画ダウンローダー'
     self.download_folder = None
     self.download_path = None
     self.mange_id = None
@@ -81,7 +84,7 @@ class Manga:
     self.origin = f'https://nhentai.net/g/{self.mange_id}'
 
   def check(self):
-    self.window.setWindowTitle(f'{self.main_config['General']['title']} | 接続準備中...')
+    self.window.setWindowTitle(f'{self.title} | 接続準備中...')
     self.enabled_button(False)
 
     req = request.Request(url=self.origin, headers=self.headers)
@@ -102,7 +105,8 @@ class Manga:
 
     thumbnailContainer = self.soup.find(id='thumbnail-container')
 
-    self.download_folder = re.sub(r'[<>|\|*|"|\/|\|:|?]', ' ', self.get_title())
+    self.download_folder = re.sub(r'[<>|\|*|"|\/|\|:|?]', ' ',
+                                  self.get_title())
     self.download_path = os.path.join(download_path, self.download_folder)
 
     if thumbnailContainer:
@@ -118,7 +122,7 @@ class Manga:
 
         image_list.append(image_url)
 
-      self.download_thread = DownloadThread(self.main_config, image_list, self.download_path)
+      self.download_thread = DownloadThread(image_list, self.download_path)
       self.download_thread.started.connect(lambda: on_download_started())
       self.download_thread.finished.connect(lambda: on_download_finished())
       self.download_thread.start()

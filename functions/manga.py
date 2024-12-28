@@ -14,11 +14,9 @@ class DownloadThread(QThread):
   def __init__(self, image_list, download_path):
     super().__init__()
 
-    config = Config('setting.ini')
-
     self.image_list = image_list
     self.download_path = download_path
-    self.dowload_config = config.load()
+    self.config = Config('setting.ini')
 
     if os.path.exists(self.download_path):
       return
@@ -27,7 +25,7 @@ class DownloadThread(QThread):
 
   def run(self):
     image_list_length = len(self.image_list)
-    max_workers = int(self.dowload_config['Dowload']['max_workers'])
+    max_workers = int(self.config['SETTING']['Dowload']['max_workers'])
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
 
@@ -40,7 +38,7 @@ class DownloadThread(QThread):
 
         request.urlretrieve(image_url, image_path)
 
-        time.sleep(int(self.dowload_config['Dowload']['delay']))
+        time.sleep(int(self.config['SETTING']['Dowload']['delay']))
 
       for index, _ in enumerate(executor.map(download_image, self.image_list)):
         self.progress.emit(index + 1)
@@ -51,7 +49,7 @@ class Manga:
   def __init__(self, window, enabled_button):
     self.window = window
     self.enabled_button = enabled_button
-    self.title = '漫画ダウンローダー'
+    self.config = Config()
     self.download_folder = None
     self.download_path = None
     self.mange_id = None
@@ -84,7 +82,7 @@ class Manga:
     self.origin = f'https://nhentai.net/g/{self.mange_id}'
 
   def check(self):
-    self.window.setWindowTitle(f'{self.title} | 接続準備中...')
+    self.window.setWindowTitle(self.config['MESSAGE']['SEARCH']['SEARCHING'])
     self.enabled_button(False)
 
     req = request.Request(url=self.origin, headers=self.headers)
@@ -133,11 +131,11 @@ class Manga:
       print(pdf_path)
 
     def on_download_started():
-      self.window.setWindowTitle(f'{self.title} | ダウンロード中...')
+      self.window.setWindowTitle(self.config['MESSAGE']['DOWNLOAD']['DOWNLOADING'])
       self.enabled_button(False)
 
     def on_download_finished():
-      self.window.setWindowTitle(f'{self.title} | ダウンロード完了')
+      self.window.setWindowTitle(self.config['MESSAGE']['DOWNLOAD']['SUCCESS'])
 
       if (save_pdf_state):
         save_as_pdf()

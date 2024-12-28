@@ -2,7 +2,7 @@ import os
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QFileDialog
 from PyQt6.QtCore import QDir
 from widgets import CoverImage, MangaSearch, Button, CheckButton
-from functions import Manga
+from functions import Manga, Config
 
 
 class SearchLayout(QWidget):
@@ -10,8 +10,10 @@ class SearchLayout(QWidget):
   def __init__(self, window):
     super().__init__()
 
+    config = Config()
+
     self.window = window
-    self.title = '漫画ダウンローダー'
+    self.config = Config()
     self.save_as_pdf_state = False
 
     self.mange = Manga(window, self.enabled_button)
@@ -21,11 +23,11 @@ class SearchLayout(QWidget):
 
     self.manga_search = MangaSearch()
     self.manga_search = self.manga_search.init_ui()
-    self.search_button = Button('検索')
+    self.search_button = Button(config['WIDGET']['BUTTON']['SEARCH'])
     self.search_button = self.search_button.init_ui()
-    self.download_button = Button('ダウンロード')
+    self.download_button = Button(config['WIDGET']['BUTTON']['DOWNLOAD'])
     self.download_button = self.download_button.init_ui()
-    self.save_as_pdf_button = CheckButton('PDF として保存')
+    self.save_as_pdf_button = CheckButton(config['WIDGET']['BUTTON']['PDF'])
     self.save_as_pdf_button = self.save_as_pdf_button.init_ui()
 
     self.download_button.setEnabled(False)
@@ -65,17 +67,17 @@ class SearchLayout(QWidget):
       cover_url = self.mange.get_cover()
 
       self.cover_image.set_cover(cover_url)
-      self.window.setWindowTitle(f'{self.title} | 接続成功')
+      self.window.setWindowTitle(self.config['MESSAGE']['SEARCH']['SUCCESS'])
     else:
       self.cover_image.reset_cover()
-      self.window.setWindowTitle(f'{self.title} | 接続エラー、再入力してください')
+      self.window.setWindowTitle(self.config['MESSAGE']['SEARCH']['ERROR'])
 
     self.enabled_button(True)
 
   def download(self):
     download_folder = os.path.join(QDir.homePath(), 'Downloads')
-    download_path = QFileDialog.getExistingDirectory(self, 'フォルダ選択',
-                                                     download_folder)
+    download_path = QFileDialog.getExistingDirectory(
+        self, self.config['WIDGET']['FILEDIALOG'], download_folder)
 
     if download_path:
       self.mange.download(download_path, self.save_as_pdf_state)

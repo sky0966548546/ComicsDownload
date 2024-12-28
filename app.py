@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QGridLayout, QFrame, QWid
 from PyQt6.QtGui import QIcon
 from widgets import LockFile
 from layout import SearchLayout
+from functions import Config
 from assets import images
 
 
@@ -13,14 +14,12 @@ class MainWindow(QMainWindow):
   def __init__(self):
     super().__init__()
 
-    title = '漫画ダウンローダー'
-    width = 400
-    height = 500
+    config = Config()
 
     with resources.as_file(resources.files(images) / 'icon.ico') as icon_path:
-      self.setWindowTitle(title)
+      self.setWindowTitle(config['WINDOW']['APP_NAME'])
       self.setWindowIcon(QIcon(str(icon_path)))
-      self.setFixedSize(width, height)
+      self.setFixedSize(config['WINDOW']['WIDTH'], config['WINDOW']['HEIGHT'])
 
     search_layout = SearchLayout(self)
 
@@ -43,8 +42,10 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == '__main__':
+  config = Config()
+
   app = QApplication([])
-  app.setStyle('Fusion')
+  app.setStyle(config['WINDOW']['STYLE'])
 
   lock_file_path = os.path.join(os.getcwd(), 'app.lock')
 

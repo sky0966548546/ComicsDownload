@@ -1,7 +1,7 @@
 import importlib.resources as resources
-from urllib.request import urlopen
 from PyQt6.QtWidgets import QHBoxLayout, QLabel
 from PyQt6.QtGui import QPixmap, QFont
+from urllib.request import urlopen
 from assets import images
 
 

@@ -56,6 +56,7 @@ class SearchLayout(QWidget):
   def enabled_button(self, enabled):
     self.search_button.setEnabled(enabled)
     self.download_button.setEnabled(enabled)
+    self.save_as_pdf_button.setEnabled(enabled)
 
   def save_as_pdf_toggled(self):
     self.save_as_pdf_state = self.save_as_pdf_button.isChecked()
